@@ -2,6 +2,13 @@ const express = require('express');
 const router = express.Router();
 const gravatar = require('gravatar');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const keys = require('../../config/key')
+const passport = require('passport');
+
+// Load User model
+const User = require('../../models/User')
+
 
 // @route   GET api/users/test
 // @desc    Tests users route
@@ -10,33 +17,22 @@ router.get('/test', (req, res, next) => {
   res.json({msg:'users OK'})
 })
 
-// Load User model
-const User = require('../../models/User')
-
-// @route   GET api/users/register
+// @route   POST api/users/register
 // @desc    Register a user
 // @access  Public
 router.post('/register', (req, res, next) => {
-  
-  // L'utilisateur existe-t-il ?
-  User.findOne({ email: req.body.email })
+    User
+      .findOne({ email: req.body.email })
+      .then(user => {
 
-  // Après que Mongo renvoie un résultat il le stock dans la var user 
-  .then(user => {
-
-    // S'il y a déjà un email, il renvoie une erreur 400 et le json suivant
     if(user) {
       return res.status(400).json({email: 'email already exists'})
     } else {
-
-      // Pour Gravatar
       const avatar = gravatar.url(req.body.email, {
         s: '200', // Size
         r: 'pg', // Rating
         d: 'mm', // Default
       });
-
-      // Création d'un user
       const newUser = new User ({
         name: req.body.name,
         email: req.body.email,
@@ -44,33 +40,85 @@ router.post('/register', (req, res, next) => {
         password: req.body.password,
       });
 
-      // Crypter le password 
-      // On crée d'abord le salt (méthode de cryptage)
-      // On appelle un callback qui rend une erreur s'il y en a ou le salt
       bcrypt.genSalt(10, (err, salt ) => {
-
-        // On hash le password du nouveau user que nous venons de créer 
-        // On lui passe le plain password puis le salt, puis un callback
         bcrypt.hash(newUser.password, salt, (err, hash) =>{
-
-          // Le callback nous renvoie soit une err..
           if(err) throw err;
-
-          // ..Soit le password hashé avec le salt dans la var hash
-          // On remplace le plain pw par le hash et on save
           newUser.password = hash;
-
           newUser
-            // On save le newUser avec 4 éléments du model
             .save()
-            // Il nous renvoie le user en JSON
             .then(user => res.json(user))
             .catch(err => console.log('error dans la sauvegarde du user :', err))
         });
       });
-
     }
   }); 
-})
+});
+
+// @route   POST api/users/login
+// @desc    Login user / Returning JWT
+// @access  Public
+router.post('/login', (req, res, next) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  // Find user by Email
+  User
+    .findOne({ email })
+    .then(user => {
+      
+      // Check s'il y a un user 
+      if(!user) {
+        return res.status(404).json({email: 'email not found'});
+      } 
+
+      // Check le password 
+      // On passe le plain password et on le compare avec le hash pw du findOne
+      bcrypt.compare(password, user.password)
+
+      // .compare nous renvoie un true or false que nous stockons dans isMatch
+      .then(isMatch => {
+          
+          // Si c'est vrai, alors le user passe et nous générons le token
+          if(isMatch) {
+            // User Matched, créer le JWT payload
+            const payload = { id: user.id, name: user.name, avatar: user.avatar }
+
+            // Sign Token, pour faire plusieurs choses :
+            // le payload : ce que nous mettons dans le token, en l'occurrence, le user
+            // Send a secret or key :
+            // Puis une option (une expiration après 1h. plutot mettre "1d" pour un jour !
+            // Puis le callback qui renvoie le token !
+            jwt.sign(payload, keys.secretOrKey, { expiresIn: 3600 }, (err, token) => {
+              res.json({sucess: true, token: 'Bearer ' + token})
+            });
+            
+          } else {
+            // Sinon, on revoie une erreur
+            return res.status(400).json({password: 'password incorrect'});
+          }
+        });
+    });
+});
+
+// @route   GET api/users/current
+// @desc    Return current user
+// @access  Private
+
+// en second paramètre = passport 
+// nous passons jwt comme stratégie 
+// nous n'utilisons pas les sessions 
+// fini par le callback qui donne la réponse
+// on ne peut y acceder sans token
+// Nous obtenons le retour du jwt_playload qui se trouve dans passport.js
+router.get('/current', passport.authenticate('jwt', {session: false}), (req, res, next) => {
+  res.json({
+    id: req.user.id,
+    name: req.user.name,
+    email: req.user.email,
+    avatar: req.user.avatar,
+  });
+});
 
 module.exports = router;
+
+
