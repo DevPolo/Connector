@@ -14,13 +14,6 @@ const validateLoginInput = require('../../validation/login');
 const User = require('../../models/User');
 
 
-// @route   GET api/users/test
-// @desc    Tests users route
-// @access  Public
-router.get('/test', (req, res, next) => {
-  res.json({msg:'users OK'});
-})
-
 // @route   POST api/users/register
 // @desc    Register a user
 // @access  Public
@@ -71,6 +64,7 @@ router.post('/register', (req, res, next) => {
   }); 
 });
 
+
 // @route   POST api/users/login
 // @desc    Login user / Returning JWT
 // @access  Public
@@ -111,6 +105,7 @@ router.post('/login', (req, res, next) => {
         });
     });
 });
+
 
 // @route   GET api/users/current
 // @desc    Return current user due to JWT & Passport module
