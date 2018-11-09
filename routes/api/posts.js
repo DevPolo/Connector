@@ -93,35 +93,35 @@ router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, re
 });
 
 
-// @route   POST api/posts/like/:id
-// @desc    Like post
-// @access  Private
-router.post('/like/:id', passport.authenticate('jwt', { session: false }), (req, res, next) => {
-  const errors = {};
+// // @route   POST api/posts/like/:id
+// // @desc    Like post
+// // @access  Private
+// router.post('/like/:id', passport.authenticate('jwt', { session: false }), (req, res, next) => {
+//   const errors = {};
 
-  Profile.findOne({ user: req.user.id })
-  .then(profile => {
+//   Profile.findOne({ user: req.user.id })
+//   .then(profile => {
 
-    Post.findById(req.params.id)
-      .then(post => {
+//     Post.findById(req.params.id)
+//       .then(post => {
 
-        // Check si le user a déjà liké le post
-        if(post.likes.filter(like => like.user.toString() === req.user.id).length > 0) {
-          errors.alreadyliked = 'User already liked this post';
-          return res.status(400).json({ errors })
-        }
+//         // Check si le user a déjà liké le post
+//         if(post.likes.filter(like => like.user.toString() === req.user.id).length > 0) {
+//           errors.alreadyliked = 'User already liked this post';
+//           return res.status(400).json({ errors })
+//         }
 
-        // Add user id to likes array
-        post.likes.unshift({ user: req.user.id });
+//         // Add user id to likes array
+//         post.likes.unshift({ user: req.user.id });
 
-        post.save().then(post => res.json(post));
-      })
-      .catch(err => {
-        errors.postnotfound = 'Post not found';
-        res.status(404). json(errors);
-      });
-  });
-});
+//         post.save().then(post => res.json(post));
+//       })
+//       .catch(err => {
+//         errors.postnotfound = 'Post not found';
+//         res.status(404). json(errors);
+//       });
+//   });
+// });
 
 
 // @route   POST api/posts/like/:id
