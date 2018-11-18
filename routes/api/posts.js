@@ -261,6 +261,3 @@ router.delete('/comment/:id/:comment_id', passport.authenticate('jwt', { session
 });
 
 module.exports = router;
-
-
-

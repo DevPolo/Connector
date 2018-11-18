@@ -7,7 +7,6 @@ module.exports = function validateRegisterInput(data) {
   // data.name ne sera pas un string empty (comme nous l'avons créé)
   // Ici, il passe par notre isEmpty fct (contrairement à celle de Vailidator)
   data.name = !isEmpty(data.name) ? data.name : '';
-
   data.email = !isEmpty(data.email) ? data.email : '';
   data.password = !isEmpty(data.password) ? data.password : '';
   data.passwordConfirmation = !isEmpty(data.passwordConfirmation) ? data.passwordConfirmation : '';

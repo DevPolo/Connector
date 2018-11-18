@@ -50,8 +50,8 @@ router.post('/register', (req, res, next) => {
       });
 
       // Bcrypt process
-      bcrypt.genSalt(10, (err, salt ) => {
-        bcrypt.hash(newUser.password, salt, (err, hash) =>{
+      bcrypt.genSalt(10, (err, salt) => {
+        bcrypt.hash(newUser.password, salt, (err, hash) => {
           if(err) throw err;
           newUser.password = hash;
           newUser
@@ -108,7 +108,7 @@ router.post('/login', (req, res, next) => {
 
 
 // @route   GET api/users/current
-// @desc    Return current user due to JWT & Passport module
+// @desc    r
 // @access  Private
 router.get('/current', passport.authenticate('jwt', {session: false}), (req, res, next) => {
   res.json({
@@ -120,5 +120,3 @@ router.get('/current', passport.authenticate('jwt', {session: false}), (req, res
 });
 
 module.exports = router;
-
-
