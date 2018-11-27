@@ -9,7 +9,6 @@ import ProfileActions from './ProfileActions';
 class Dashboard extends Component {
 
   componentDidMount() {
-    console.log('tg :');
     this.props.getCurrentProfile();
   }
 

@@ -114,7 +114,7 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res, ne
   if(!isValid) {
     // Return any errors with 400 status
     return res.status(400).json(errors);
-  }
+  };
 
   const profileFields = {};
 
@@ -188,7 +188,7 @@ router.post('/experience', passport.authenticate('jwt', { session: false }), (re
   if(!isValid) {
 
     // Return any errors with 400 status
-    res.status(400).json(errors);
+    return res.status(400).json(errors);
   };
 
   Profile.findOne({ user: req.user.id })
@@ -204,7 +204,9 @@ router.post('/experience', passport.authenticate('jwt', { session: false }), (re
       };
 
       profile.experiences.unshift(newExp);
-      profile.save()
+      
+      profile
+        .save()
         .then(profile => res.json(profile));
     });
 });
@@ -222,7 +224,7 @@ router.post('/education', passport.authenticate('jwt', { session: false }), (req
   if(!isValid) {
 
     // Return any errors with 400 status
-    res.status(400).json(errors);
+    return res.status(400).json(errors);
   };
 
   Profile.findOne({ user: req.user.id })
@@ -238,7 +240,9 @@ router.post('/education', passport.authenticate('jwt', { session: false }), (req
       };
 
       profile.education.unshift(newEdu);
-      profile.save()
+
+      profile
+        .save()
         .then(profile => res.json(profile));
     });
 });
